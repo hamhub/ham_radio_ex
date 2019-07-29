@@ -1,7 +1,5 @@
 defmodule HamRadio do
   @moduledoc """
-  Documentation for HamRadio.
+  Core types and utility functions for amateur radio applications. 
   """
-
-  # Nothing to see here
 end

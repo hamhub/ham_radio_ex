@@ -132,7 +132,9 @@ defmodule HamRadio.Bands do
   ]
 
   @doc """
-  Returns a list of all known bands, sorted by increasing frequency.
+  Returns a list of all known bands.
+
+  Bands are sorted by increasing frequency.
   """
   @spec list :: [Band.t()]
   def list, do: @bands

@@ -1,10 +1,23 @@
 defmodule HamRadio.Grid do
+  @moduledoc """
+  Converts between coordinates and Maidenhead grid locators.
+  """
+
   @alphabet ~w(A B C D E F G H I J K L M N O P Q R S T U V W X Y Z)
   @regex ~r/[A-R]{2}[0-9]{2}($|([a-x]{2}$))/i
 
-  def encode({lat, lon}, length), do: encode(lat, lon, length)
+  @type coord :: {lat :: float, lon :: float}
+  @type grid_length :: 4 | 6
 
-  def encode(lat, lon, length)
+  @doc """
+  Converts a coordinate pair into a grid square.
+
+  The `length` can be `4` (default) or `6`, returning grids like `"FN32"` or `"FN32ab"`, respectively.
+  """
+  @spec encode(coord, grid_length) :: {:ok, String.t()} | :error
+  def encode(coord, length \\ 4)
+
+  def encode({lat, lon}, length)
       when length in [4, 6] and lat >= -90.0 and lat <= 90 and lon >= -180 and lon <= 180 do
     # Normalize from (-90, -180) to (0, 0)
     lon = lon + 180.0
@@ -52,11 +65,19 @@ defmodule HamRadio.Grid do
     end
   end
 
-  def encode(_, _, _), do: :error
+  def encode(_, _), do: :error
 
+  @doc """
+  Converts a grid square into a coordinate pair.
+
+  The coordinate is located at the center of the grid square.
+
+  Returns `:error` if the grid is invalid.
+  """
+  @spec decode(String.t()) :: {:ok, coord} | :error
   def decode(grid) when is_binary(grid) do
     if valid?(grid) do
-      decode_valid(grid)
+      {:ok, decode_valid!(grid)}
     else
       :error
     end
@@ -64,10 +85,21 @@ defmodule HamRadio.Grid do
 
   def decode(_), do: :error
 
+  @doc """
+  Determines if a grid square is legit.
+  """
+  @spec valid?(String.t()) :: boolean
   def valid?(grid) do
     Regex.match?(@regex, grid)
   end
 
+  @doc """
+  Normalizes the string casing of a grid square.
+
+      iex> HamRadio.Grid.format("fn32ab")
+      "FN32ab"
+  """
+  @spec format(String.t()) :: String.t()
   def format(grid) do
     {a, b} = String.split_at(grid, 2)
     String.upcase(a) <> b
@@ -75,7 +107,7 @@ defmodule HamRadio.Grid do
 
   # PRIVATE
 
-  defp decode_valid(grid) do
+  defp decode_valid!(grid) do
     lon = -180.0
     lat = -90.0
 
@@ -96,7 +128,7 @@ defmodule HamRadio.Grid do
         lon = lon + 360.0 / 18.0 / 10.0 / 2.0
         lat = lat + 180.0 / 18.0 / 10.0 / 2.0
 
-        {:ok, {lat, lon}}
+        {lat, lon}
 
       6 ->
         lon_ord_3 =
@@ -108,10 +140,10 @@ defmodule HamRadio.Grid do
         lon = lon + 360.0 / 18.0 / 10.0 / 24.0 * (lon_ord_3 + 0.5)
         lat = lat + 180.0 / 18.0 / 10.0 / 24.0 * (lat_ord_3 + 0.5)
 
-        {:ok, {lat, lon}}
+        {lat, lon}
 
       _ ->
-        :error
+        raise "Invalid grid passed validation check: '#{grid}'"
     end
   end
 end
