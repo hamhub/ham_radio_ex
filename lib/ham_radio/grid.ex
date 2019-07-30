@@ -7,6 +7,9 @@ defmodule HamRadio.Grid do
   @regex ~r/[A-R]{2}[0-9]{2}($|([a-x]{2}$))/i
 
   @type coord :: {lat :: float, lon :: float}
+  @type coord_bounds ::
+          {{lat_min :: float, lat_max :: float}, {lon_min :: float, lon_max :: float}}
+
   @type grid_length :: 4 | 6
 
   @doc """
@@ -68,6 +71,19 @@ defmodule HamRadio.Grid do
   def encode(_, _), do: :error
 
   @doc """
+  Converts a coordinate pair into a grid square.
+
+  Raises `ArgumentError` if the coordinates are invalid.
+  """
+  @spec encode!(coord, grid_length) :: String.t() | no_return
+  def encode!(coord, length \\ 4) do
+    case encode(coord, length) do
+      {:ok, grid} -> grid
+      :error -> raise ArgumentError, "Invalid coordinate or grid length"
+    end
+  end
+
+  @doc """
   Converts a grid square into a coordinate pair.
 
   The coordinate is located at the center of the grid square.
@@ -84,6 +100,53 @@ defmodule HamRadio.Grid do
   end
 
   def decode(_), do: :error
+
+  @doc """
+  Converts a grid square into a coordinate pair.
+
+  Raises `ArgumentError` if the grid is invalid.
+  """
+  @spec decode(String.t()) :: coord | no_return
+  def decode!(grid) do
+    case decode(grid) do
+      {:ok, coord} -> coord
+      :error -> raise ArgumentError, "Invalid grid #{inspect(grid)}"
+    end
+  end
+
+  @doc """
+  Converts a grid square into the boundaries of its enclosing rectangle.
+
+  Returns `:error` if the grid is invalid.
+  """
+  @spec decode_bounds(String.t()) :: {:ok, coord_bounds} | :error
+  def decode_bounds(grid) do
+    with {:ok, {lat, lon}} <- decode(grid) do
+      {lat_offset, lon_offset} =
+        if String.length(grid) == 4,
+          do: {0.5, 1.0},
+          else: {0.05, 0.1}
+
+      {:ok,
+       {
+         {lat - lat_offset, lat + lat_offset},
+         {lon - lon_offset, lon + lon_offset}
+       }}
+    end
+  end
+
+  @doc """
+  Converts a grid square into the boundaries of its enclosing rectangle.
+
+  Raises `ArgumentError` if the grid is invalid.
+  """
+  @spec decode_bounds!(String.t()) :: coord_bounds | no_return
+  def decode_bounds!(grid) do
+    case decode_bounds(grid) do
+      {:ok, bounds} -> bounds
+      :error -> raise ArgumentError, "Invalid grid #{inspect(grid)}"
+    end
+  end
 
   @doc """
   Determines if a grid square is legit.
