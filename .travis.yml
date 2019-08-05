@@ -15,3 +15,6 @@ script:
   - mix credo --strict
   - mix dialyzer --halt-exit-status
   - mix test
+cache:
+  directories:
+    - priv/plts
