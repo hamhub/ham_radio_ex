@@ -12,7 +12,10 @@ defmodule HamRadio.MixProject do
       name: "HamRadio",
       source_url: "https://github.com/hamhub/ham_radio_ex",
       description: description(),
-      package: package()
+      package: package(),
+      dialyzer: [
+        plt_file: {:no_warn, "priv/plts/dialyzer.plt"}
+      ]
     ]
   end
 

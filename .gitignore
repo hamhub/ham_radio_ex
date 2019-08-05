@@ -22,4 +22,9 @@ erl_crash.dump
 # Ignore package tarball (built via "mix hex.build").
 ham_radio-*.tar
 
+# Ignore Elixir language server artifacts
 .elixir_ls/
+
+# Ignore PLTs generated for CI cache.
+/priv/plts/*.plt
+/priv/plts/*.plt.hash
