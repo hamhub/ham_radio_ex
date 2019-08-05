@@ -106,7 +106,7 @@ defmodule HamRadio.Grid do
 
   Raises `ArgumentError` if the grid is invalid.
   """
-  @spec decode(String.t()) :: coord | no_return
+  @spec decode!(String.t()) :: coord | no_return
   def decode!(grid) do
     case decode(grid) do
       {:ok, coord} -> coord
@@ -180,8 +180,8 @@ defmodule HamRadio.Grid do
     lat_ord_1 =
       Enum.find_index(@alphabet, fn letter -> String.upcase(String.at(grid, 1)) == letter end)
 
-    lon_ord_2 = String.at(grid, 2) |> String.to_integer()
-    lat_ord_2 = String.at(grid, 3) |> String.to_integer()
+    lon_ord_2 = grid |> String.at(2) |> String.to_integer()
+    lat_ord_2 = grid |> String.at(3) |> String.to_integer()
 
     lon = lon + 360.0 / 18.0 * lon_ord_1 + 360.0 / 18.0 / 10.0 * lon_ord_2
     lat = lat + 180.0 / 18.0 * lat_ord_1 + 180.0 / 18.0 / 10.0 * lat_ord_2
