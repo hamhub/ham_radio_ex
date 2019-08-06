@@ -20,4 +20,9 @@ defmodule HamRadio.BandsTest do
     assert %{name: "40m"} = Bands.find("40m")
     assert nil == Bands.find("foobar")
   end
+
+  test "finding band by frequency when argument is a float" do
+    freq = 3.570124 * 1_000_000
+    assert %{name: "80m"} = Bands.at(freq)
+  end
 end

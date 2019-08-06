@@ -146,6 +146,9 @@ defmodule HamRadio.Bands do
 
   Returns `nil` if no band is found.
   """
+  @spec at(float) :: Band.t() | nil
+  def at(hz) when is_float(hz), do: at(Kernel.trunc(hz))
+
   @spec at(integer) :: Band.t() | nil
   def at(hz) do
     @bands |> Enum.find(fn band -> hz in band.range end)
